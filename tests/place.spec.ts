@@ -14,7 +14,7 @@ test.describe("search and accessibility form", () => {
 
   test("search -> select a place -> toggle one field -> submit shows a toast", async ({ page }) => {
     const search = new SearchPage(page);
-    await search.search("Gare");
+    await search.search("Saint Moritz");
     await expect(search.results().first()).toBeVisible();
     await search.results().first().click();
     await expect(page).toHaveURL(/\/places\/.+/);
@@ -29,7 +29,7 @@ test.describe("search and accessibility form", () => {
 
   test("marking a section as doesn't apply submits successfully and reads back empty", async ({ page }) => {
     const search = new SearchPage(page);
-    await search.search("Blonay");
+    await search.search("Telecabina");
     await expect(search.results().first()).toBeVisible();
     await search.results().first().click();
     await expect(page).toHaveURL(/\/places\/.+/);

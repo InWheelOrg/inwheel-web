@@ -144,6 +144,3 @@ jobs:
         run: npm run test:e2e
         env:
           INWHEEL_API_URL: http://localhost:8080/v1
-          SEARCH_LAT: "42.5538"
-          SEARCH_LNG: "1.5774"
-          SEARCH_RADIUS: "20000"

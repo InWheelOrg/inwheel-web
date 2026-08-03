@@ -30,6 +30,9 @@ export default defineConfig({
     env: {
       PAGE_PASSWORD: E2E_PAGE_PASSWORD,
       SESSION_SECRET: E2E_SESSION_SECRET,
+      SEARCH_LAT: "42.5538",
+      SEARCH_LNG: "1.5774",
+      SEARCH_RADIUS: "20000",
     },
   },
 });

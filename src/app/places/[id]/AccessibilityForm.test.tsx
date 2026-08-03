@@ -26,7 +26,7 @@ describe("AccessibilityForm", () => {
     vi.clearAllMocks();
   });
 
-  it("submits the touched field's value", async () => {
+  it("touching one field only includes that field in the submitted patch", async () => {
     submitAccessibilityPatchMock.mockResolvedValue({ ok: true });
     const user = userEvent.setup();
 
@@ -39,7 +39,26 @@ describe("AccessibilityForm", () => {
     expect(submitAccessibilityPatchMock).toHaveBeenCalledTimes(1);
     const [placeId, patch] = submitAccessibilityPatchMock.mock.calls[0];
     expect(placeId).toBe("place-1");
-    expect((patch as Record<string, unknown>).entrance).toMatchObject({ is_level: true });
+    expect(patch).toEqual({ entrance: { is_level: true } });
+  });
+
+  it("excludes an already-populated section that wasn't touched this session", async () => {
+    submitAccessibilityPatchMock.mockResolvedValue({ ok: true });
+    const user = userEvent.setup();
+
+    render(
+      <AccessibilityForm
+        placeId="place-1"
+        profile={{ parking: { count: 3, has_disabled_spaces: true } }}
+      />,
+    );
+
+    await user.click(screen.getAllByRole("button", { name: "Oui" })[0]);
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    expect(submitAccessibilityPatchMock).toHaveBeenCalledTimes(1);
+    const [, patch] = submitAccessibilityPatchMock.mock.calls[0];
+    expect(patch).toEqual({ entrance: { is_level: true } });
   });
 
   it("marking a section as doesn't apply nulls it in the submitted patch, even with untouched fields", async () => {
@@ -53,6 +72,6 @@ describe("AccessibilityForm", () => {
 
     expect(submitAccessibilityPatchMock).toHaveBeenCalledTimes(1);
     const [, patch] = submitAccessibilityPatchMock.mock.calls[0];
-    expect((patch as Record<string, unknown>).entrance).toBeNull();
+    expect(patch).toEqual({ entrance: null });
   });
 });

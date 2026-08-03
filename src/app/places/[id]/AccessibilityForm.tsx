@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { buildSparsePatch } from "@/lib/buildSparsePatch";
 import {
   ACCESSIBILITY_SECTIONS,
   type AccessibilityProfile,
@@ -277,7 +278,7 @@ export function AccessibilityForm({
   const {
     control,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { dirtyFields, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -299,10 +300,11 @@ export function AccessibilityForm({
   }
 
   const onSubmit = handleSubmit(async (values) => {
-    const patch: Record<string, unknown> = { ...values };
-    for (const section of nulledSections) {
-      patch[section] = null;
-    }
+    const patch = buildSparsePatch(
+      dirtyFields as Record<string, unknown>,
+      values as Record<string, unknown>,
+      Array.from(nulledSections),
+    );
 
     const result = await submitAccessibilityPatch(placeId, patch);
     if (!result.ok) {
