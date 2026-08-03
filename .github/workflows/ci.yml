@@ -68,6 +68,20 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgis/postgis:18-3.6
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: inwheel
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d inwheel"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -78,5 +92,58 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: InWheelOrg/inwheel-api
+          ref: main
+          path: inwheel-api
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: inwheel-api/go.mod
+
+      - name: Seed inwheel-api with the Andorra test fixture
+        working-directory: inwheel-api
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: inwheel
+          DB_SSLMODE: disable
+          OSM_PBF_PATH: testdata/andorra-sample.osm.pbf
+        run: go run ./cmd/ingestion osm full-import
+
+      - name: Start inwheel-api
+        working-directory: inwheel-api
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: inwheel
+          DB_SSLMODE: disable
+        run: |
+          nohup go run ./cmd/api > /tmp/inwheel-api.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/healthz && exit 0
+            sleep 1
+          done
+          echo "inwheel-api did not become healthy in time"
+          cat /tmp/inwheel-api.log
+          exit 1
+
+      - name: Register a throwaway API key
+        run: |
+          KEY=$(curl -sf -X POST http://localhost:8080/v1/auth/register \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"ci@inwheel.org"}' | jq -r .api_key)
+          echo "INWHEEL_API_KEY=$KEY" >> "$GITHUB_ENV"
+
       - name: Run tests
         run: npm run test:e2e
+        env:
+          INWHEEL_API_URL: http://localhost:8080/v1
+          SEARCH_LAT: "42.5538"
+          SEARCH_LNG: "1.5774"
+          SEARCH_RADIUS: "20000"
