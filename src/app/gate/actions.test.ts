@@ -34,9 +34,10 @@ vi.mock("@/lib/session", () => ({
 
 import { submitGatePassword } from "./actions";
 
-function formDataWith(password?: string): FormData {
+function formDataWith(password?: string, acceptPrivacy = true): FormData {
   const fd = new FormData();
   if (password !== undefined) fd.set("password", password);
+  if (acceptPrivacy) fd.set("acceptPrivacy", "on");
   return fd;
 }
 
@@ -60,6 +61,12 @@ describe("submitGatePassword", () => {
     const result = await submitGatePassword({}, formDataWith("anything"));
 
     expect(result).toEqual({ error: "Trop de tentatives. Réessayez dans une minute." });
+    expect(isCorrectPagePasswordMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects without accepting the privacy policy", async () => {
+    const result = await submitGatePassword({}, formDataWith("anything", false));
+    expect(result).toEqual({ error: "Vous devez accepter la politique de confidentialité." });
     expect(isCorrectPagePasswordMock).not.toHaveBeenCalled();
   });
 

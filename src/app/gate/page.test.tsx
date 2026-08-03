@@ -13,10 +13,20 @@ vi.mock("./actions", () => ({
 import GatePage from "./page";
 
 describe("GatePage", () => {
-  it("renders a password field and submit button", () => {
+  it("renders a password field, privacy checkbox, and submit button", () => {
     render(<GatePage />);
     expect(screen.getByLabelText("Mot de passe")).toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Entrer" })).toBeInTheDocument();
+  });
+
+  it("disables submit until the privacy checkbox is checked", async () => {
+    const user = userEvent.setup();
+    render(<GatePage />);
+
+    expect(screen.getByRole("button", { name: "Entrer" })).toBeDisabled();
+    await user.click(screen.getByRole("checkbox"));
+    expect(screen.getByRole("button", { name: "Entrer" })).toBeEnabled();
   });
 
   it("shows the error returned by the action after a failed submit", async () => {
@@ -25,6 +35,7 @@ describe("GatePage", () => {
 
     render(<GatePage />);
     await user.type(screen.getByLabelText("Mot de passe"), "wrong-password");
+    await user.click(screen.getByRole("checkbox"));
     await user.click(screen.getByRole("button", { name: "Entrer" }));
 
     expect(await screen.findByText("Mot de passe incorrect.")).toBeInTheDocument();

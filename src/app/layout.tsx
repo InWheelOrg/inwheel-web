@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import { buttonVariants } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -31,17 +33,22 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <footer className="p-4 text-center text-xs text-muted-foreground">
-          Place data ©{" "}
-          <a
-            href="https://www.openstreetmap.org/copyright"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            OpenStreetMap contributors
-          </a>
-          , licensed under ODbL.
+        <footer className="flex flex-col items-center gap-1 p-4 text-center text-xs text-muted-foreground">
+          <p>
+            Place data ©{" "}
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              OpenStreetMap contributors
+            </a>
+            , licensed under ODbL.
+          </p>
+          <Link href="/privacy" className={buttonVariants({ variant: "link", size: "sm" })}>
+            Confidentialité
+          </Link>
         </footer>
         <Toaster />
       </body>
