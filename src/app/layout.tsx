@@ -31,6 +31,18 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
+        <footer className="p-4 text-center text-xs text-muted-foreground">
+          Place data ©{" "}
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            OpenStreetMap contributors
+          </a>
+          , licensed under ODbL.
+        </footer>
         <Toaster />
       </body>
     </html>
