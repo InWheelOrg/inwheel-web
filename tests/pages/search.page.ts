@@ -18,6 +18,6 @@ export class SearchPage {
   }
 
   results() {
-    return this.page.getByRole("link");
+    return this.page.locator("ul").getByRole("link");
   }
 }

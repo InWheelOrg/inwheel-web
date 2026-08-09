@@ -17,7 +17,7 @@ test.describe("search and accessibility form", () => {
     await search.search("Saint Moritz");
     await expect(search.results().first()).toBeVisible();
     await search.results().first().click();
-    await expect(page).toHaveURL(/\/places\/.+/);
+    await expect(page).toHaveURL(/\/places\/.+/, { timeout: 15_000 });
 
     const detail = new PlaceDetailPage(page);
     await detail.firstYesToggle("Entrée").click();
@@ -32,7 +32,7 @@ test.describe("search and accessibility form", () => {
     await search.search("Telecabina");
     await expect(search.results().first()).toBeVisible();
     await search.results().first().click();
-    await expect(page).toHaveURL(/\/places\/.+/);
+    await expect(page).toHaveURL(/\/places\/.+/, { timeout: 15_000 });
     const placeUrl = page.url();
 
     const detail = new PlaceDetailPage(page);

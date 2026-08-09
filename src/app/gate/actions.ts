@@ -27,6 +27,10 @@ export async function submitGatePassword(
     return { error: "Trop de tentatives. Réessayez dans une minute." };
   }
 
+  if (formData.get("acceptPrivacy") !== "on") {
+    return { error: "Vous devez accepter la politique de confidentialité." };
+  }
+
   const password = formData.get("password");
   if (typeof password !== "string" || password.length === 0) {
     return { error: "Mot de passe requis." };
